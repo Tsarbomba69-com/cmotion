@@ -90,5 +90,5 @@ void update()
 
 void display()
 {
-    o.shape.c.render(&o.shape);
+    o.shape.s.render(&o.shape);
 }

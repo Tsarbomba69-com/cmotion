@@ -11,8 +11,8 @@ int main(int argc, char **argv)
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
     glutInitWindowSize(640, 480);
     glutCreateWindow("Falling Object");
-    shape = new_circle(color, 0.1); // Circle
-    // shape = {.s = {.color = color, .x = 0, .y = 15, .width = 0.1, .height = 0.5, .render = draw_rect}}; // Rect
+    //shape = new_circle(color, 0.1); // Circle
+    shape = new_rect(color, new_vector2(0, 0), new_vector2(0.5, 0.5));
     o = new_object(new_vector2(0, 20), shape);
     glutDisplayFunc(display);
     glutIdleFunc(update);

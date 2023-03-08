@@ -4,6 +4,7 @@
         "glut.h": "c",
         "vec.h": "c",
         "assert.h": "c",
-        "cmotion.h": "c"
+        "cmotion.h": "c",
+        "limits": "c"
     }
 }

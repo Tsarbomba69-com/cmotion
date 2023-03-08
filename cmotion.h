@@ -28,17 +28,11 @@ typedef struct Rect
 {
     float x;      // x-coordinate of top-left corner
     float y;      // y-coordinate of top-left corner
-    float width;  // width of rectangle
-    float height; // height of rectangle
+    float w;  // width of rectangle
+    float h; // height of rectangle
     Color color;
     void (*render)();
 } Rect;
-
-typedef enum
-{
-    CIRCLE,
-    RECT,
-} ShapeType;
 
 typedef union Shape
 {

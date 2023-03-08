@@ -47,18 +47,20 @@ void draw_rect(Shape *shape)
 
 Shape new_circle(Color color, float radius)
 {
+    assert(radius > 0 && "Radius must be greater than zero");
     Circle c = {.color = color, .r = radius, .render = draw_circle};
     return (Shape)c;
 }
 
 Shape new_rect(Color color, Vector2 top_corner, Vector2 size)
 {
+    assert(size.x > 0 && size.y > 0 && "Rectangle must have positive dimensions");
     Rect c = {
-        .color = color, 
-        .x = top_corner.x, 
-        .y = top_corner.y, 
-        .width = size.x, 
-        .height = size.y, 
+        .color = color,
+        .x = top_corner.x,
+        .y = top_corner.y,
+        .width = size.x,
+        .height = size.y,
         .render = draw_rect};
     return (Shape)c;
 }
@@ -90,5 +92,12 @@ void update()
 
 void display()
 {
-    o.shape.s.render(&o.shape);
+    if (o.shape.s.height > 0 && o.shape.s.width > 0)
+    {
+        o.shape.s.render(&o.shape);
+    }
+    else if (o.shape.c.r > 0)
+    {
+        o.shape.c.render(&o.shape);
+    }
 }

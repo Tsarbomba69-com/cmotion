@@ -4,6 +4,7 @@
 
 #include "clinear.h"
 #include <GL/glut.h>
+#include <stddef.h>
 
 extern double g;
 extern double radius;
@@ -32,6 +33,12 @@ typedef struct Rect
     Color color;
     void (*render)();
 } Rect;
+
+typedef enum
+{
+    CIRCLE,
+    RECT,
+} ShapeType;
 
 typedef union Shape
 {

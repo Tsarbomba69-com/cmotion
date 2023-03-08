@@ -5,11 +5,6 @@
 #include "clinear.h"
 #include <GL/glut.h>
 
-extern double posX;
-extern double posY;
-extern double velX;
-extern double velY;
-extern double accX;
 extern double g;
 extern double radius;
 extern int previous_time;
@@ -23,14 +18,25 @@ typedef struct Color
 
 typedef struct Circle
 {
-    float r;
+    float r; // radius of the circle
     Color color;
     void (*render)();
 } Circle;
 
+typedef struct Rect
+{
+    float x;      // x-coordinate of top-left corner
+    float y;      // y-coordinate of top-left corner
+    float width;  // width of rectangle
+    float height; // height of rectangle
+    Color color;
+    void (*render)();
+} Rect;
+
 typedef union Shape
 {
     Circle c;
+    Rect s;
 } Shape;
 
 typedef struct Object
@@ -40,6 +46,9 @@ typedef struct Object
     Shape shape;
 } Object;
 
+Shape new_circle(Color color, float radius);
+Shape new_rect(Color color, Vector2 top_corner, Vector2 size);
+Object new_object(Vector2 position, Shape shape);
 void update();
 void display();
 #endif

@@ -26,9 +26,9 @@ typedef struct Circle
 
 typedef struct Rect
 {
-    float x;      // x-coordinate of top-left corner
-    float y;      // y-coordinate of top-left corner
-    float w;  // width of rectangle
+    float x; // x-coordinate of top-left corner
+    float y; // y-coordinate of top-left corner
+    float w; // width of rectangle
     float h; // height of rectangle
     Color color;
     void (*render)();
@@ -40,16 +40,19 @@ typedef union Shape
     Rect s;
 } Shape;
 
-typedef struct Object
+typedef struct RigidBody
 {
     Vector2 position;
     Vector2 velocity;
+    Vector2 acceleration;
+    float mass;
     Shape shape;
-} Object;
+} RigidBody;
 
 Shape new_circle(Color color, float radius);
 Shape new_rect(Color color, Vector2 top_corner, Vector2 size);
-Object new_object(Vector2 position, Shape shape);
+RigidBody new_rigidbody(float m, Vector2 position, Shape shape);
+void add_force(RigidBody *rb, Vector2 force);
 void update();
 void display();
 #endif

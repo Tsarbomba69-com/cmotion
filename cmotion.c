@@ -1,19 +1,18 @@
 #include "cmotion.h"
 Shape shape; // Rect
-Object o;
+RigidBody rb;
 int WIDTH;
 int HEIGHT;
-
 double g = -9.8;
 int previous_time = 0;
-double radius = 0.1;
+float MILLISECONDS = 5000.0f;
 
 void draw_circle(Shape *shape)
 {
     glClear(GL_COLOR_BUFFER_BIT);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    glTranslated(o.position.x, o.position.y, 0.0);
+    glTranslated(rb.position.x, rb.position.y, 0.0);
     glColor3f(shape->c.color.r, shape->c.color.g, shape->c.color.b);
     glBegin(GL_POLYGON);
 
@@ -35,7 +34,7 @@ void draw_rect(Shape *shape)
     glClear(GL_COLOR_BUFFER_BIT);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    glTranslated(o.position.x, o.position.y, 0.0);
+    glTranslated(rb.position.x, rb.position.y, 0.0);
     glColor3f(shape->s.color.r, shape->s.color.g, shape->s.color.b);
     glBegin(GL_QUADS);
     glVertex2f(shape->s.x, shape->s.y);
@@ -67,10 +66,26 @@ Shape new_rect(Color color, Vector2 top_corner, Vector2 size)
     return (Shape)c;
 }
 
-Object new_object(Vector2 position, Shape shape)
+RigidBody new_rigidbody(float m, Vector2 position, Shape shape)
 {
-    Object o = {.position = position, .shape = shape, .velocity = new_vector2(0, 0)};
+    RigidBody o = {
+        .position = position,
+        .shape = shape,
+        .velocity = new_vector2(0, 0),
+        .acceleration = new_vector2(0, 0),
+        .mass = m};
     return o;
+}
+
+void add_force(RigidBody *rb, Vector2 force)
+{
+    // F = m * a => a = F/m
+    rb->acceleration = new_vector2(force.x / rb->mass, force.y / rb->mass);
+    int current_time = glutGet(GLUT_ELAPSED_TIME);
+    float delta_time = (current_time - previous_time) / 10000.0f;
+    previous_time = current_time;
+    rb->velocity.x += rb->acceleration.x * delta_time;
+    rb->velocity.y += rb->acceleration.y * delta_time;
 }
 
 bool rect_collision(Rect rect1, Rect rect2)
@@ -91,14 +106,51 @@ bool rect_window_collision(Rect rect)
     return rect.x - rect.w / 2 < 0 || rect.x + rect.w / 2 > WIDTH || rect.y - rect.h / 2 < 0 || rect.y + rect.h / 2 > HEIGHT;
 }
 
-void update()
+void update() // PROJECTILE SHOOTING
 {
     int current_time = glutGet(GLUT_ELAPSED_TIME);
-    float delta_time = (current_time - previous_time) / 1000.0f;
+    float delta_time = (current_time - previous_time) / MILLISECONDS;
     previous_time = current_time;
-    o.velocity.x += o.velocity.x * delta_time;
-    o.velocity.y += g * delta_time;
-    o.position.y += 0.5 * o.velocity.y * delta_time;
+
+    // if (rb.position.y - 0.02 * rb.shape.s.h < -1.0) // BOX COLLISION: Edge detection
+    // {
+    //     rb.position.y = -1.0 + 0.02 * rb.shape.s.h;
+    //     double angle = atan(rb.velocity.y / rb.velocity.x) * 180 / PI;
+    //     double v = magnitude2(&rb.velocity);
+    //     rb.velocity.y -= v * sin(angle) * 0.2;
+    //     rb.position.y = rb.velocity.y * delta_time;
+    // }
+
+    if (rb.position.y - rb.shape.c.r < -1.0) // CIRCLE COLLISION: Edge detection
+    {
+        rb.position.y = -1.0 + rb.shape.c.r;
+        long double angle = atan2l(rb.velocity.y, rb.velocity.x) * 180 / PI;
+        double v = magnitude2(&rb.velocity);
+        rb.velocity.y -= v * sin(angle) * 0.9;
+        rb.position.y += rb.velocity.y * delta_time + rb.shape.c.r;
+    }
+    else
+    {
+        rb.velocity.y += g * delta_time;
+        rb.position.y += 0.5 * rb.velocity.y * delta_time;
+    }
+
+    rb.position.x += rb.velocity.x * delta_time;
+    printf("v =");
+    print_vector2(&rb.velocity);
+    printf("s =");
+    print_vector2(&rb.position);
+    glutPostRedisplay();
+}
+
+void update2() // FREE FALL
+{
+    int current_time = glutGet(GLUT_ELAPSED_TIME);
+    float delta_time = (current_time - previous_time) / MILLISECONDS;
+    previous_time = current_time;
+    rb.velocity.x += rb.velocity.x * delta_time;
+    rb.velocity.y += g * delta_time;
+    rb.position.y += 0.5 * rb.velocity.y * delta_time;
 
     // if (o.position.y - 0.02 * o.shape.s.h < -1.0) // BOX COLLISION: Edge detection
     // {
@@ -106,27 +158,25 @@ void update()
     //     o.velocity.y = -o.velocity.y * 0.2;
     // }
 
-    if (o.position.y - o.shape.c.r < -1.0) // CIRCLE COLLISION: Edge detection
+    if (rb.position.y - rb.shape.c.r < -1.0) // CIRCLE COLLISION: Edge detection
     {
-        o.position.y = -1.0 + o.shape.c.r;
-        o.velocity.y = -o.velocity.y * 0.2;
+        rb.position.y = -1.0 + rb.shape.c.r;
+        rb.velocity.y = -rb.velocity.y * 0.2;
     }
     glutPostRedisplay();
 }
 
 void display()
 {
-    if (o.shape.s.h > 0 && o.shape.s.w > 0)
+    if (rb.shape.s.h > 0 && rb.shape.s.w > 0)
     {
-        o.shape.s.render(&o.shape);
+        rb.shape.s.render(&rb.shape);
     }
-    else if (o.shape.c.r > 0)
+    else if (rb.shape.c.r > 0)
     {
-        o.shape.c.render(&o.shape);
+        rb.shape.c.render(&rb.shape);
     }
 }
 
-// TODO: Build Colliders
 // TODO: Rect collider
-// TODO: Add acceleration property to object
 // TODO:

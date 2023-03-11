@@ -13,13 +13,13 @@ int main(int argc, char **argv) // PROJECTILE SHOOTING
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
     glutInitWindowSize(WIDTH, HEIGHT);
     glutCreateWindow("Falling Object");
-    shape = new_circle(color, 0.1); // Circle
-    // shape = new_rect(color, new_vector2(0, 0), new_vector2(0.1, 0.1)); // Rect
-    rb = new_rigidbody(1, new_vector2(-1, 1), shape);
-    Vector2 f = new_vector2(5, 5);
+    // shape = new_circle(color, 0.1); // Circle
+    shape = new_rect(color, new_vector2(0, 0), new_vector2(0.1, 0.1)); // Rect
+    rb = new_rigidbody(1, new_vector2(-1, 0), shape);
+    Vector2 f = new_vector2(15, 3);
     double F = magnitude2(&f);
-    f.x = F * cos(30 * PI / 180);
-    f.y = F * sin(30 * PI / 180);
+    f.x = F * cos(60 * PI / 180);
+    f.y = F * sin(60 * PI / 180);
     add_force(&rb, f);
     glutDisplayFunc(display);
     glutIdleFunc(update);

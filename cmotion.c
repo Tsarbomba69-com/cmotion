@@ -5,7 +5,7 @@ int WIDTH;
 int HEIGHT;
 double g = -9.8;
 int previous_time = 0;
-float MILLISECONDS = 5000.0f;
+float MILLISECONDS = 3000.0f;
 
 void draw_circle(Shape *shape)
 {
@@ -109,37 +109,29 @@ bool rect_window_collision(Rect rect)
 void update() // PROJECTILE SHOOTING
 {
     int current_time = glutGet(GLUT_ELAPSED_TIME);
-    float delta_time = (current_time - previous_time) / MILLISECONDS;
+    double delta_time = (current_time - previous_time) / MILLISECONDS;
     previous_time = current_time;
-
-    // if (rb.position.y - 0.02 * rb.shape.s.h < -1.0) // BOX COLLISION: Edge detection
-    // {
-    //     rb.position.y = -1.0 + 0.02 * rb.shape.s.h;
-    //     double angle = atan(rb.velocity.y / rb.velocity.x) * 180 / PI;
-    //     double v = magnitude2(&rb.velocity);
-    //     rb.velocity.y -= v * sin(angle) * 0.2;
-    //     rb.position.y = rb.velocity.y * delta_time;
-    // }
-
-    if (rb.position.y - rb.shape.c.r < -1.0) // CIRCLE COLLISION: Edge detection
+    rb.velocity.y += g * delta_time;
+    rb.position.y += 0.5 * rb.velocity.y * delta_time;
+    if (rb.position.y - (rb.shape.s.h - rb.shape.s.y)/2 < -1.0) // BOX COLLISION: Edge detection
     {
-        rb.position.y = -1.0 + rb.shape.c.r;
+        rb.position.y = -1.0 + (rb.shape.s.h - rb.shape.s.y)/2;
         long double angle = atan2l(rb.velocity.y, rb.velocity.x) * 180 / PI;
         double v = magnitude2(&rb.velocity);
-        rb.velocity.y -= v * sin(angle) * 0.9;
-        rb.position.y += rb.velocity.y * delta_time + rb.shape.c.r;
-    }
-    else
-    {
-        rb.velocity.y += g * delta_time;
-        rb.position.y += 0.5 * rb.velocity.y * delta_time;
+        rb.velocity.y = v * sin(angle) * 0.9;
+        rb.position.y += rb.velocity.y * delta_time + rb.shape.s.h;
     }
 
+    // if (rb.position.y - rb.shape.c.r < -1.0) // CIRCLE COLLISION: Edge detection
+    // {
+    //     rb.position.y = -1.0 + rb.shape.c.r;
+    //     long double angle = atan2l(rb.velocity.y, rb.velocity.x) * 180 / PI;
+    //     double v = magnitude2(&rb.velocity);
+    //     rb.velocity.y = v * sin(angle) * 0.9;
+    //     rb.position.y += rb.velocity.y * delta_time + rb.shape.c.r;
+    // }
+
     rb.position.x += rb.velocity.x * delta_time;
-    printf("v =");
-    print_vector2(&rb.velocity);
-    printf("s =");
-    print_vector2(&rb.position);
     glutPostRedisplay();
 }
 

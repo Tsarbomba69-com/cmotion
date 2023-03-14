@@ -5,7 +5,9 @@ int WIDTH;
 int HEIGHT;
 double g = -9.8;
 int previous_time = 0;
-float MILLISECONDS = 3000.0f;
+const float MILLISECONDS = 1000.0f;
+const float FIXED_TIME_STEP = 1.0f / 60.0f;
+float accumulator = 0.0f;
 
 void draw_circle(Shape *shape)
 {
@@ -111,28 +113,36 @@ void update() // PROJECTILE SHOOTING
     int current_time = glutGet(GLUT_ELAPSED_TIME);
     double delta_time = (current_time - previous_time) / MILLISECONDS;
     previous_time = current_time;
-    rb.velocity.y += g * delta_time;
-    rb.position.y += 0.5 * rb.velocity.y * delta_time;
-    if (rb.position.y - (rb.shape.s.h - rb.shape.s.y)/2 < -1.0) // BOX COLLISION: Edge detection
+    accumulator += FIXED_TIME_STEP;
+
+    while (accumulator >= FIXED_TIME_STEP)
     {
-        rb.position.y = -1.0 + (rb.shape.s.h - rb.shape.s.y)/2;
-        long double angle = atan2l(rb.velocity.y, rb.velocity.x) * 180 / PI;
-        double v = magnitude2(&rb.velocity);
-        rb.velocity.y = v * sin(angle) * 0.9;
-        rb.position.y += rb.velocity.y * delta_time + rb.shape.s.h;
+
+        rb.velocity.y += g * FIXED_TIME_STEP;
+        rb.position.y += 0.5 * rb.velocity.y * FIXED_TIME_STEP;
+        // if (rb.position.y - (rb.shape.s.h - rb.shape.s.y) / 2 < -1.0) // BOX COLLISION: Edge detection
+        // {
+        //     rb.position.y = -1.0 + (rb.shape.s.h - rb.shape.s.y) / 2;
+        //     long double angle = atan2l(rb.velocity.y, rb.velocity.x) * 180 / PI;
+        //     double v = magnitude2(&rb.velocity);
+        //     rb.velocity.y = v * sin(angle) * 0.9;
+        //     rb.position.y += rb.velocity.y * FIXED_TIME_STEP + rb.shape.s.h;
+        // }
+
+        if (rb.position.y - rb.shape.c.r < -1.0) // CIRCLE COLLISION: Edge detection
+        {
+            rb.position.y = -1.0 + rb.shape.c.r;
+            long double angle = atan2l(rb.velocity.y, rb.velocity.x) * 180 / PI;
+            double v = magnitude2(&rb.velocity);
+            rb.velocity.y = v * sin(angle) * 0.7;
+            rb.position.y += rb.velocity.y * FIXED_TIME_STEP + rb.shape.c.r;
+        }
+
+        rb.position.x += rb.velocity.x * FIXED_TIME_STEP;
+        // Subtract fixed time step from accumulator
+        accumulator -= FIXED_TIME_STEP;
+        glutPostRedisplay();
     }
-
-    // if (rb.position.y - rb.shape.c.r < -1.0) // CIRCLE COLLISION: Edge detection
-    // {
-    //     rb.position.y = -1.0 + rb.shape.c.r;
-    //     long double angle = atan2l(rb.velocity.y, rb.velocity.x) * 180 / PI;
-    //     double v = magnitude2(&rb.velocity);
-    //     rb.velocity.y = v * sin(angle) * 0.9;
-    //     rb.position.y += rb.velocity.y * delta_time + rb.shape.c.r;
-    // }
-
-    rb.position.x += rb.velocity.x * delta_time;
-    glutPostRedisplay();
 }
 
 void update2() // FREE FALL

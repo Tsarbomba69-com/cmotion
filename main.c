@@ -13,8 +13,8 @@ int main(int argc, char **argv) // PROJECTILE SHOOTING
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
     glutInitWindowSize(WIDTH, HEIGHT);
     glutCreateWindow("Falling Object");
-    // shape = new_circle(color, 0.1); // Circle
-    shape = new_rect(color, new_vector2(0, 0), new_vector2(0.1, 0.1)); // Rect
+    shape = new_circle(color, 0.1); // Circle
+    // shape = new_rect(color, new_vector2(0, 0), new_vector2(0.1, 0.1)); // Rect
     rb = new_rigidbody(1, new_vector2(-1, 0), shape);
     Vector2 f = new_vector2(15, 3);
     double F = magnitude2(&f);

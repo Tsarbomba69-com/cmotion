@@ -180,5 +180,4 @@ void display()
     }
 }
 
-// TODO: Rect collider
-// TODO:
+// TODO: Set up the projection matrix

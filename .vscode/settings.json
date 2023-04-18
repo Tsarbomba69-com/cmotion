@@ -5,6 +5,7 @@
         "vec.h": "c",
         "assert.h": "c",
         "cmotion.h": "c",
-        "limits": "c"
+        "limits": "c",
+        "stddef.h": "c"
     }
 }

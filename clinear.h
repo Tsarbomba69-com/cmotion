@@ -47,4 +47,5 @@ Vector2 normalize2(Vector2 *a);
 double angle2(Vector2 *a, Vector2 *b);
 // Prints a 2D vector.
 void print_vector2(Vector2 *vector);
+Vector2 transform(double matrix[][4], Vector2 *vector);
 #endif

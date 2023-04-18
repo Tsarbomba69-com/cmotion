@@ -12,7 +12,7 @@ ar rcs cmotion.a cmotion.o
 # 3. Compile code that will use the library.
 gcc -c main.c -Wall -Wextra -fdiagnostics-color=always -ggdb -o main.o
 # 4. Link static libraries to your source object.
-gcc -g -o main main.o -l:cmotion.a -l:vec.a -l:clinear.a -lm -lGL -lglut -lGLU -L.
+gcc -g -o main main.o -l:cmotion.a -l:clinear.a -l:vec.a -lm -lGL -lglut -lGLU -L.
 # 4.1. Delete object files (optional)
 rm *.o 
 # Execute program

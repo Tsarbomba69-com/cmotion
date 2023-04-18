@@ -170,11 +170,12 @@ void update2() // FREE FALL
 
 void display()
 {
-    if (rb.shape.s.h > 0 && rb.shape.s.w > 0)
-    {
-        rb.shape.s.render(&rb.shape);
-    }
-    else if (rb.shape.c.r > 0)
+    // if (rb.shape.s.h > 0 && rb.shape.s.w > 0)
+    // {
+    //     rb.shape.s.render(&rb.shape);
+    // }
+    // else 
+    if (rb.shape.c.r > 0)
     {
         rb.shape.c.render(&rb.shape);
     }

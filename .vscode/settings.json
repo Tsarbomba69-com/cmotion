@@ -6,6 +6,9 @@
         "assert.h": "c",
         "cmotion.h": "c",
         "limits": "c",
-        "stddef.h": "c"
+        "stddef.h": "c",
+        "sdl.h": "c",
+        "sdl_gfxprimitives.h": "c",
+        "sdl2_gfxprimitives.h": "c"
     }
 }

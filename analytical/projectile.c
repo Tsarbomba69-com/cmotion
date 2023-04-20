@@ -1,8 +1,14 @@
 #include <GL/glut.h>
 #include <stdio.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL2_gfxPrimitives.h>
+#define WINDOW_WIDTH 1080
+#define WINDOW_HEIGHT 640
 #define INV_SQRT 0.70710678119
+#define THETA 60
 #define SQRT_2 1.41421356237
 #define DURATION 20000
+#define v0 8
 const float g = -9.8;
 // Define the particle position data
 float particlePositions[DURATION][2] = {};
@@ -25,6 +31,33 @@ void update(int value)
     glutTimerFunc(16, update, 0);
 }
 
+/* Draws a slider at the specified position with the specified value */
+void draw_slider(float x, float y, float width, float height, float value)
+{
+    /* Set the slider color */
+    glColor3f(1.0f, 1.0f, 1.0f);
+
+    /* Draw the slider track */
+    glBegin(GL_QUADS);
+    glVertex2f(x, y + height / 2.0f);
+    glVertex2f(x + width, y + height / 2.0f);
+    glVertex2f(x + width, y - height / 2.0f);
+    glVertex2f(x, y - height / 2.0f);
+    glEnd();
+
+    /* Draw the slider handle */
+    float handle_width = width * 0.05f;
+    float handle_height = height * 0.75f;
+    float handle_x = x + width * value - handle_width / 2.0f;
+    float handle_y = y;
+    glBegin(GL_QUADS);
+    glVertex2f(handle_x, handle_y + handle_height / 2.0f);
+    glVertex2f(handle_x + handle_width, handle_y + handle_height / 2.0f);
+    glVertex2f(handle_x + handle_width, handle_y - handle_height / 2.0f);
+    glVertex2f(handle_x, handle_y - handle_height / 2.0f);
+    glEnd();
+}
+
 void display()
 {
     // Clear the screen
@@ -36,12 +69,30 @@ void display()
     // Draw the particle at its current position
     int index = (int)(currentTime / step);
     glPushMatrix();
-    glTranslatef(particlePositions[index][0], particlePositions[index][1], 0);
+    glTranslatef(particlePositions[index][0] - 2, particlePositions[index][1] - 1, 0);
     glutSolidSphere(0.1, 16, 16);
     glPopMatrix();
-
+    draw_slider(-2.2, -1.9, 0.5, 0.3, 0.3);
     // Swap the buffers
     glutSwapBuffers();
+}
+
+float radians(float degrees)
+{
+    return degrees * M_PI / 180.0;
+}
+
+double *compute_range(double start, double end, double step)
+{
+    int num_steps = (int)((end - start) / step) + 1;
+    double *result = (double *)malloc(num_steps * sizeof(double));
+
+    for (int i = 0; i < num_steps; i++)
+    {
+        result[i] = start + i * step;
+    }
+
+    return result;
 }
 
 int main(int argc, char **argv)
@@ -49,19 +100,17 @@ int main(int argc, char **argv)
     // Initialize OpenGL
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
-    glutInitWindowSize(640, 480);
+    glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
     glutCreateWindow("Particle Animation");
     // Create timeline
     for (int t = 0; t <= DURATION - 1; t++)
     {
-        // |f| = √2mg, √2/2 = 1/√2 = 0.70710678118, m = 1,
-#define v0 5
         float time = t * step;
-        particlePositions[t][0] = time * time * 0.5 * INV_SQRT * v0;
-        particlePositions[t][1] = time * (v0 * INV_SQRT + time * 0.5 * g);
+        particlePositions[t][0] = time * cosf(radians(THETA)) * v0;
+        particlePositions[t][1] = time * (v0 * sinf(radians(THETA)) + time * 0.5 * g);
     }
     // Set up the viewport
-    glViewport(0, 0, 640, 480);
+    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     // Set up the projection matrix
     glMatrixMode(GL_PROJECTION);

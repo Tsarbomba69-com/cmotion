@@ -48,6 +48,8 @@
 				"-lGL",
 				"-lglut",
 				"-lGLU",
+				"`pkg-config --cflags --libs sdl2`",
+				"-lSDL2_gfx",
 				"-L."
 			],
 			"options": {

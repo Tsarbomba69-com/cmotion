@@ -42,6 +42,107 @@ void update(int value)
     glutTimerFunc(16, update, 0);
 }
 
+void drawGrid2()
+{
+    // Set the color of the grid lines
+    glColor3f(0.5f, 0.5f, 0.5f);
+
+    // Draw horizontal lines
+    for (int y = -5; y <= 5; y++)
+    {
+        glBegin(GL_LINES);
+        glVertex2f(-5, y);
+        glVertex2f(5, y);
+        glEnd();
+    }
+
+    // Draw vertical lines
+    for (int x = -5; x <= 5; x++)
+    {
+        glBegin(GL_LINES);
+        glVertex2f(x, -5);
+        glVertex2f(x, 5);
+        glEnd();
+    }
+}
+
+void drawGrid()
+{
+    glBegin(GL_LINES);
+    float grid_lines = 8;
+
+    for (float i = -grid_lines; i <= grid_lines; i += 0.4f)
+    {
+        if (i > 0.000001 && i < 0.400001)
+        {
+            // set color to red for center line
+            glColor3f(1.0, 0.0, 0.0);
+        }
+        else
+        {
+            glColor3f(0.5, 0.5, 0.5); // set color to gray for other lines
+        }
+        glVertex3f(i, -grid_lines, 0.0f);
+        glVertex3f(i, grid_lines, 0.0f);
+        glVertex3f(-grid_lines, i, 0.0f);
+        glVertex3f(grid_lines, i, 0.0f);
+    }
+    puts("");
+    glEnd();
+}
+
+void drawGrid4()
+{
+    int i;
+    float grid_lines = 8;
+    glColor3f(0.5, 0.5, 0.5); // Set color to gray
+    glBegin(GL_LINES);
+    for (i = -grid_lines; i <= grid_lines; i++)
+    {
+        if (i == 0)
+        {
+            // set color to red for center line
+            glColor3f(1.0, 0.0, 0.0);
+        }
+        else
+        {
+            glColor3f(0.5, 0.5, 0.5); // set color to gray for other lines
+        }
+        // Draw vertical lines
+        glVertex3f(i, -grid_lines, 0);
+        glVertex3f(i, grid_lines, 0);
+
+        // Draw horizontal lines
+        glVertex3f(-grid_lines, i, 0);
+        glVertex3f(grid_lines, i, 0);
+
+        glColor3f(0.5, 0.5, 0.5); // Set color back to gray for next line
+    }
+    glEnd();
+}
+
+void drawGrid5()
+{
+    glColor3f(0.5f, 0.5f, 0.5f);
+    glBegin(GL_LINES);
+
+    for (float i = -1.0; i <= 1.0; i += 0.1)
+    {
+        glVertex2f(i, -1.0);
+        glVertex2f(i, 1.0);
+        glVertex2f(-1.0, i);
+        glVertex2f(1.0, i);
+    }
+    glEnd();
+
+    // Draw center line
+    glColor3f(1.0f, 0.0f, 0.0f);
+    glBegin(GL_LINES);
+    glVertex2f(-1.0f, 0.0f);
+    glVertex2f(1.0f, 0.0f);
+    glEnd();
+}
+
 /* Draws a slider at the specified position with the specified value */
 void draw_slider(float x, float y, float width, float height, float value)
 {
@@ -75,6 +176,8 @@ void display()
     int index = (int)(currentTime / step);
     // Clear the screen
     glClear(GL_COLOR_BUFFER_BIT);
+    // Draw the grid on the background
+    drawGrid();
     for (size_t i = 0; i < NUM_PARTICLES; i++)
     {
         // Set the particle color

@@ -8,7 +8,8 @@
 #define THETA 60
 #define SQRT_2 1.41421356237
 #define DURATION 20000
-#define v0 8
+#define v0 4
+#define NUM_PARTICLES 16
 const float g = -9.8;
 // Define the particle position data
 float particlePositions[DURATION][2] = {};
@@ -19,10 +20,20 @@ float currentTime = 0;
 // Define the time step (in seconds)
 float step = 0.01;
 
+// Particle
+typedef struct Particle
+{
+    float x[DURATION];
+    float y[DURATION];
+    float m;
+} Particle;
+
+Particle particles[NUM_PARTICLES] = {};
+
 void update(int value)
 {
     // Update the current time
-    currentTime += step;
+    currentTime = currentTime > 2 ? 0 : currentTime + step;
 
     // Redraw the scene
     glutPostRedisplay();
@@ -60,19 +71,20 @@ void draw_slider(float x, float y, float width, float height, float value)
 
 void display()
 {
-    // Clear the screen
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    // Set the particle color
-    glColor3f(64, 64, 64);
-
     // Draw the particle at its current position
     int index = (int)(currentTime / step);
-    glPushMatrix();
-    glTranslatef(particlePositions[index][0] - 2, particlePositions[index][1] - 1, 0);
-    glutSolidSphere(0.1, 16, 16);
-    glPopMatrix();
-    draw_slider(-2.2, -1.9, 0.5, 0.3, 0.3);
+    // Clear the screen
+    glClear(GL_COLOR_BUFFER_BIT);
+    for (size_t i = 0; i < NUM_PARTICLES; i++)
+    {
+        // Set the particle color
+        glColor3f(64, 64, 64);
+        glPushMatrix();
+        glTranslatef(particles[i].x[index], particles[i].y[index], 0);
+        glutSolidSphere(0.1, 16, 16);
+        glPopMatrix();
+        // draw_slider(-2.2, -1.9, 0.5, 0.3, 0.3);
+    }
     // Swap the buffers
     glutSwapBuffers();
 }
@@ -102,13 +114,29 @@ int main(int argc, char **argv)
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
     glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
     glutCreateWindow("Particle Animation");
-    // Create timeline
-    for (int t = 0; t <= DURATION - 1; t++)
+    // FILE *fd;
+    // fd = fopen("position data.txt", "w");
+
+    // if (fd == NULL)
+    // {
+    //     printf("ERROR: Could not open the file.\n");
+    //     return EXIT_FAILURE;
+    // }
+
+    for (size_t i = 0; i < NUM_PARTICLES; i++)
     {
-        float time = t * step;
-        particlePositions[t][0] = time * cosf(radians(THETA)) * v0;
-        particlePositions[t][1] = time * (v0 * sinf(radians(THETA)) + time * 0.5 * g);
+        particles[i].m = 1;
+        float thetas[NUM_PARTICLES] = {0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 215, 330};
+        // Create timeline
+        for (size_t t = 0; t <= DURATION - 1; t++)
+        {
+            float time = t * step;
+            particles[i].x[t] = time * cosf(radians(thetas[i])) * v0;
+            particles[i].y[t] = time * (v0 * sinf(radians(thetas[i])) + time * 0.5 * g);
+            // fprintf(fd, "Φ: %f, x(%f): %f y(%f): %f\n", thetas[i], time, particles[i].x[t], time, particles[i].y[t]);
+        }
     }
+    // fclose(fd);
     // Set up the viewport
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
@@ -133,6 +161,5 @@ int main(int argc, char **argv)
 
     // Start the main loop
     glutMainLoop();
-
-    return 0;
+    return EXIT_SUCCESS;
 }

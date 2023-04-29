@@ -11,8 +11,7 @@
 #define v0 4
 #define NUM_PARTICLES 16
 const float g = -9.8;
-// Define the particle position data
-float particlePositions[DURATION][2] = {};
+float times[DURATION] = {};
 
 // Define the current time (in seconds)
 float currentTime = 0;
@@ -26,6 +25,7 @@ typedef struct Particle
     float x[DURATION];
     float y[DURATION];
     float m;
+    float angle;
 } Particle;
 
 Particle particles[NUM_PARTICLES] = {};
@@ -143,6 +143,21 @@ void drawGrid5()
     glEnd();
 }
 
+void displayText(char *text, float x, float y)
+{
+    // Set the color to white
+    glColor3f(1.0f, 1.0f, 1.0f);
+
+    // Set the position for the text
+    glRasterPos2f(x, y);
+
+    // Draw the text
+    while (*text)
+    {
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *text++);
+    }
+}
+
 /* Draws a slider at the specified position with the specified value */
 void draw_slider(float x, float y, float width, float height, float value)
 {
@@ -170,6 +185,37 @@ void draw_slider(float x, float y, float width, float height, float value)
     glEnd();
 }
 
+void renderCard(float width, float height)
+{
+    // Define gradient colors
+    GLfloat gradientColors[] = {0, 0, 0, 1.0, 0.2, 0.2, 0.2, 0.7};
+
+    // Enable blending to allow transparency
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // Define vertex data for the quad
+    GLfloat vertices[] = {
+        0.0f, 0.0f, gradientColors[0], gradientColors[1], gradientColors[2], gradientColors[3],
+        width, 0.0f, gradientColors[0], gradientColors[1], gradientColors[2], gradientColors[3],
+        width, height, gradientColors[4], gradientColors[5], gradientColors[6], gradientColors[7],
+        0.0f, height, gradientColors[4], gradientColors[5], gradientColors[6], gradientColors[7]};
+
+    // Enable vertex arrays and set the vertex data
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+    glVertexPointer(2, GL_FLOAT, 6 * sizeof(GLfloat), vertices);
+    glColorPointer(4, GL_FLOAT, 6 * sizeof(GLfloat), vertices + 2);
+
+    // Draw the quad using vertex arrays
+    glDrawArrays(GL_QUADS, 0, 4);
+
+    // Disable vertex arrays and blending
+    glDisableClientState(GL_VERTEX_ARRAY);
+    glDisableClientState(GL_COLOR_ARRAY);
+    glDisable(GL_BLEND);
+}
+
 void display()
 {
     // Draw the particle at its current position
@@ -178,16 +224,35 @@ void display()
     glClear(GL_COLOR_BUFFER_BIT);
     // Draw the grid on the background
     drawGrid();
+
+    // Set particle color
+    glColor3f(64, 64, 64);
+
+    // Draw the card
+    glPushMatrix();
+    glTranslatef(-2.7, 0, 0);
+    renderCard(1.05, 3);
+    glPopMatrix();
+
+    // Draw particles
+    char particle_data[300];
+    float angle, y_pos;
     for (size_t i = 0; i < NUM_PARTICLES; i++)
     {
-        // Set the particle color
-        glColor3f(64, 64, 64);
+        angle = particles[i].angle;
+        y_pos = (float)i / 8 + 0.1;
+        glPushMatrix();
+        glTranslatef(-2.7, 0, 0);
+        sprintf(particle_data, "p: %.2fº, x(%.2f): %.2f, y(%.2f): %.2f\n",
+                angle, times[index], particles[i].x[index], times[index], particles[i].y[index]);
+        displayText(particle_data, 0.05, y_pos);
+        glPopMatrix();
         glPushMatrix();
         glTranslatef(particles[i].x[index], particles[i].y[index], 0);
         glutSolidSphere(0.1, 16, 16);
         glPopMatrix();
-        // draw_slider(-2.2, -1.9, 0.5, 0.3, 0.3);
     }
+
     // Swap the buffers
     glutSwapBuffers();
 }
@@ -228,14 +293,17 @@ int main(int argc, char **argv)
 
     for (size_t i = 0; i < NUM_PARTICLES; i++)
     {
-        particles[i].m = 1;
         float thetas[NUM_PARTICLES] = {0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 215, 330};
+        particles[i].m = 1;
+        particles[i].angle = thetas[i];
+
         // Create timeline
         for (size_t t = 0; t <= DURATION - 1; t++)
         {
             float time = t * step;
             particles[i].x[t] = time * cosf(radians(thetas[i])) * v0;
             particles[i].y[t] = time * (v0 * sinf(radians(thetas[i])) + time * 0.5 * g);
+            times[t] = time;
             // fprintf(fd, "Φ: %f, x(%f): %f y(%f): %f\n", thetas[i], time, particles[i].x[t], time, particles[i].y[t]);
         }
     }

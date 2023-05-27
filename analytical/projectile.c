@@ -1,7 +1,7 @@
 #include <GL/glut.h>
 #include <stdio.h>
 #include <SDL2/SDL.h>
-#include <SDL2/SDL2_gfxPrimitives.h>
+#define PI 3.1415926535897932384626433832795
 #define WINDOW_WIDTH 1080
 #define WINDOW_HEIGHT 640
 #define INV_SQRT 0.70710678119
@@ -66,7 +66,7 @@ void drawGrid2()
     }
 }
 
-void drawGrid()
+void draw_grid()
 {
     glBegin(GL_LINES);
     float grid_lines = 8;
@@ -91,59 +91,7 @@ void drawGrid()
     glEnd();
 }
 
-void drawGrid4()
-{
-    int i;
-    float grid_lines = 8;
-    glColor3f(0.5, 0.5, 0.5); // Set color to gray
-    glBegin(GL_LINES);
-    for (i = -grid_lines; i <= grid_lines; i++)
-    {
-        if (i == 0)
-        {
-            // set color to red for center line
-            glColor3f(1.0, 0.0, 0.0);
-        }
-        else
-        {
-            glColor3f(0.5, 0.5, 0.5); // set color to gray for other lines
-        }
-        // Draw vertical lines
-        glVertex3f(i, -grid_lines, 0);
-        glVertex3f(i, grid_lines, 0);
-
-        // Draw horizontal lines
-        glVertex3f(-grid_lines, i, 0);
-        glVertex3f(grid_lines, i, 0);
-
-        glColor3f(0.5, 0.5, 0.5); // Set color back to gray for next line
-    }
-    glEnd();
-}
-
-void drawGrid5()
-{
-    glColor3f(0.5f, 0.5f, 0.5f);
-    glBegin(GL_LINES);
-
-    for (float i = -1.0; i <= 1.0; i += 0.1)
-    {
-        glVertex2f(i, -1.0);
-        glVertex2f(i, 1.0);
-        glVertex2f(-1.0, i);
-        glVertex2f(1.0, i);
-    }
-    glEnd();
-
-    // Draw center line
-    glColor3f(1.0f, 0.0f, 0.0f);
-    glBegin(GL_LINES);
-    glVertex2f(-1.0f, 0.0f);
-    glVertex2f(1.0f, 0.0f);
-    glEnd();
-}
-
-void displayText(char *text, float x, float y)
+void display_text(char *text, float x, float y)
 {
     // Set the color to white
     glColor3f(1.0f, 1.0f, 1.0f);
@@ -158,58 +106,18 @@ void displayText(char *text, float x, float y)
     }
 }
 
-/* Draws a slider at the specified position with the specified value */
-void draw_slider(float x, float y, float width, float height, float value)
+void render_card(GLfloat vertices[], float width, float height, float size)
 {
-    /* Set the slider color */
-    glColor3f(1.0f, 1.0f, 1.0f);
-
-    /* Draw the slider track */
-    glBegin(GL_QUADS);
-    glVertex2f(x, y + height / 2.0f);
-    glVertex2f(x + width, y + height / 2.0f);
-    glVertex2f(x + width, y - height / 2.0f);
-    glVertex2f(x, y - height / 2.0f);
-    glEnd();
-
-    /* Draw the slider handle */
-    float handle_width = width * 0.05f;
-    float handle_height = height * 0.75f;
-    float handle_x = x + width * value - handle_width / 2.0f;
-    float handle_y = y;
-    glBegin(GL_QUADS);
-    glVertex2f(handle_x, handle_y + handle_height / 2.0f);
-    glVertex2f(handle_x + handle_width, handle_y + handle_height / 2.0f);
-    glVertex2f(handle_x + handle_width, handle_y - handle_height / 2.0f);
-    glVertex2f(handle_x, handle_y - handle_height / 2.0f);
-    glEnd();
-}
-
-void renderCard(float width, float height)
-{
-    // Define gradient colors
-    GLfloat gradientColors[] = {0, 0, 0, 1.0, 0.2, 0.2, 0.2, 0.7};
-
     // Enable blending to allow transparency
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    // Define vertex data for the quad
-    GLfloat vertices[] = {
-        0.0f, 0.0f, gradientColors[0], gradientColors[1], gradientColors[2], gradientColors[3],
-        width, 0.0f, gradientColors[0], gradientColors[1], gradientColors[2], gradientColors[3],
-        width, height, gradientColors[4], gradientColors[5], gradientColors[6], gradientColors[7],
-        0.0f, height, gradientColors[4], gradientColors[5], gradientColors[6], gradientColors[7]};
-
     // Enable vertex arrays and set the vertex data
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_COLOR_ARRAY);
-    glVertexPointer(2, GL_FLOAT, 6 * sizeof(GLfloat), vertices);
-    glColorPointer(4, GL_FLOAT, 6 * sizeof(GLfloat), vertices + 2);
-
+    glVertexPointer(2, GL_FLOAT, size, vertices);
+    glColorPointer(4, GL_FLOAT, size, vertices + 2);
     // Draw the quad using vertex arrays
     glDrawArrays(GL_QUADS, 0, 4);
-
     // Disable vertex arrays and blending
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_COLOR_ARRAY);
@@ -223,7 +131,7 @@ void display()
     // Clear the screen
     glClear(GL_COLOR_BUFFER_BIT);
     // Draw the grid on the background
-    drawGrid();
+    draw_grid();
 
     // Set particle color
     glColor3f(64, 64, 64);
@@ -231,7 +139,18 @@ void display()
     // Draw the card
     glPushMatrix();
     glTranslatef(-2.7, 0, 0);
-    renderCard(1.05, 3);
+    // Define vertex data for the quad
+    float width = 1.05;
+    float height = 3;
+    float size = 6 * sizeof(GLfloat);
+    // Define gradient colors
+    GLfloat gradient_colors[] = {0, 0, 0, 1.0, 0.2, 0.2, 0.2, 0.7};
+    GLfloat vertices[] = {
+        0.0f, 0.0f, gradient_colors[0], gradient_colors[1], gradient_colors[2], gradient_colors[3],
+        width, 0.0f, gradient_colors[0], gradient_colors[1], gradient_colors[2], gradient_colors[3],
+        width, height, gradient_colors[4], gradient_colors[5], gradient_colors[6], gradient_colors[7],
+        0.0f, height, gradient_colors[4], gradient_colors[5], gradient_colors[6], gradient_colors[7]};
+    render_card(vertices, width, height, size);
     glPopMatrix();
 
     // Draw particles
@@ -245,7 +164,7 @@ void display()
         glTranslatef(-2.7, 0, 0);
         sprintf(particle_data, "p: %.2fº, x(%.2f): %.2f, y(%.2f): %.2f\n",
                 angle, times[index], particles[i].x[index], times[index], particles[i].y[index]);
-        displayText(particle_data, 0.05, y_pos);
+        display_text(particle_data, 0.05, y_pos);
         glPopMatrix();
         glPushMatrix();
         glTranslatef(particles[i].x[index], particles[i].y[index], 0);
@@ -259,7 +178,7 @@ void display()
 
 float radians(float degrees)
 {
-    return degrees * M_PI / 180.0;
+    return degrees * PI / 180.0;
 }
 
 double *compute_range(double start, double end, double step)

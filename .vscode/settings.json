@@ -11,6 +11,7 @@
         "sdl_gfxprimitives.h": "c",
         "sdl2_gfxprimitives.h": "c",
         "gl.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "glew.h": "c"
     }
 }

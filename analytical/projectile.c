@@ -1,3 +1,4 @@
+#include <GL/glew.h>
 #include <GL/glut.h>
 #include <stdio.h>
 #include <SDL2/SDL.h>
@@ -89,22 +90,32 @@ void display_text(char *text, float x, float y)
 
 void render_card(GLfloat vertices[], float width, float height, float size)
 {
-    // Enable blending and vertex arrays
-    glEnable(GL_BLEND);
+    // Create and bind a VBO
+    GLuint vbo;
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+    // Transfer the vertex data to the VBO
+    glBufferData(GL_ARRAY_BUFFER, size * sizeof(GLfloat), vertices, GL_STATIC_DRAW);
+
+    // Enable vertex attributes
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_COLOR_ARRAY);
 
-    // Set the vertex data
-    glVertexPointer(2, GL_FLOAT, size, vertices);
-    glColorPointer(4, GL_FLOAT, size, vertices + 2);
+    // Specify the vertex attribute pointers
+    glVertexPointer(2, GL_FLOAT, size, 0);
+    glColorPointer(4, GL_FLOAT, size, (GLvoid *)(2 * sizeof(GLfloat)));
 
-    // Draw the quad using vertex arrays
+    // Draw the quad using the VBO
     glDrawArrays(GL_QUADS, 0, 4);
 
-    // Disable blending and vertex arrays
-    glDisable(GL_BLEND);
+    // Disable vertex attributes and unbind the VBO
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_COLOR_ARRAY);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    // Delete the VBO
+    glDeleteBuffers(1, &vbo);
 }
 
 void display()
@@ -139,7 +150,7 @@ void display()
         glPopMatrix();
     }
     // Draw particles
-    char particle_data[300];
+    char particle_data[44];
     float angle, y_pos;
     for (size_t i = 0; i < NUM_PARTICLES; i++)
     {
@@ -148,10 +159,10 @@ void display()
         {
             angle = particles[i].angle;
             y_pos = (float)i / 8 + 0.1;
-            glPushMatrix();
-            glTranslatef(-2.7, 0, 0);
             snprintf(particle_data, sizeof(particle_data), "p: %.2fº, x(%.2f): %.2f, y(%.2f): %.2f\n",
                      angle, times[index], particles[i].x[index], times[index], particles[i].y[index]);
+            glPushMatrix();
+            glTranslatef(-2.7, 0, 0);
             display_text(particle_data, 0.05, y_pos);
             glPopMatrix();
         }
@@ -215,6 +226,14 @@ int main(int argc, char **argv)
     //     printf("ERROR: Could not open the file.\n");
     //     return EXIT_FAILURE;
     // }
+
+    // Initialize GLEW
+    GLenum glewInitResult = glewInit();
+    if (glewInitResult != GLEW_OK)
+    {
+        fprintf(stderr, "GLEW initialization failed: %s\n", glewGetErrorString(glewInitResult));
+        return EXIT_FAILURE;
+    }
 
     for (size_t i = 0; i < NUM_PARTICLES; i++)
     {

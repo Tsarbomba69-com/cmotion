@@ -1,6 +1,7 @@
 #include <GL/glut.h>
 #include <stdio.h>
 #include <SDL2/SDL.h>
+#include <stdbool.h>
 #define PI 3.1415926535897932384626433832795
 #define WINDOW_WIDTH 1080
 #define WINDOW_HEIGHT 640
@@ -12,6 +13,8 @@
 #define NUM_PARTICLES 16
 const float g = -9.8;
 float times[DURATION] = {};
+bool TEXT = false;
+bool PRINT = false;
 
 // Define the current time (in seconds)
 float currentTime = 0;
@@ -42,52 +45,29 @@ void update(int value)
     glutTimerFunc(16, update, 0);
 }
 
-void drawGrid2()
-{
-    // Set the color of the grid lines
-    glColor3f(0.5f, 0.5f, 0.5f);
-
-    // Draw horizontal lines
-    for (int y = -5; y <= 5; y++)
-    {
-        glBegin(GL_LINES);
-        glVertex2f(-5, y);
-        glVertex2f(5, y);
-        glEnd();
-    }
-
-    // Draw vertical lines
-    for (int x = -5; x <= 5; x++)
-    {
-        glBegin(GL_LINES);
-        glVertex2f(x, -5);
-        glVertex2f(x, 5);
-        glEnd();
-    }
-}
-
 void draw_grid()
 {
-    glBegin(GL_LINES);
-    float grid_lines = 8;
+    float grid_size = 8.0f;
+    float step_size = 0.4f;
+    int num_lines = (int)(2.0f * grid_size / step_size) + 1;
 
-    for (float i = -grid_lines; i <= grid_lines; i += 0.4f)
+    glBegin(GL_LINES);
+
+    for (int i = 0; i < num_lines; i++)
     {
-        if (i > 0.000001 && i < 0.400001)
-        {
-            // set color to red for center line
-            glColor3f(1.0, 0.0, 0.0);
-        }
+        float line_pos = -grid_size + i * step_size;
+
+        if (line_pos == 0.0f)
+            glColor3f(1.0f, 0.0f, 0.0f); // Set color to red for center line
         else
-        {
-            glColor3f(0.5, 0.5, 0.5); // set color to gray for other lines
-        }
-        glVertex3f(i, -grid_lines, 0.0f);
-        glVertex3f(i, grid_lines, 0.0f);
-        glVertex3f(-grid_lines, i, 0.0f);
-        glVertex3f(grid_lines, i, 0.0f);
+            glColor3f(0.5f, 0.5f, 0.5f); // Set color to gray for other lines
+
+        glVertex3f(line_pos, -grid_size, 0.0f);
+        glVertex3f(line_pos, grid_size, 0.0f);
+        glVertex3f(-grid_size, line_pos, 0.0f);
+        glVertex3f(grid_size, line_pos, 0.0f);
     }
-    puts("");
+
     glEnd();
 }
 
@@ -98,30 +78,33 @@ void display_text(char *text, float x, float y)
 
     // Set the position for the text
     glRasterPos2f(x, y);
-
+    // Cache the font
+    static void *font = GLUT_BITMAP_HELVETICA_18;
     // Draw the text
     while (*text)
     {
-        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *text++);
+        glutBitmapCharacter(font, *text++);
     }
 }
 
 void render_card(GLfloat vertices[], float width, float height, float size)
 {
-    // Enable blending to allow transparency
+    // Enable blending and vertex arrays
     glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    // Enable vertex arrays and set the vertex data
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_COLOR_ARRAY);
+
+    // Set the vertex data
     glVertexPointer(2, GL_FLOAT, size, vertices);
     glColorPointer(4, GL_FLOAT, size, vertices + 2);
+
     // Draw the quad using vertex arrays
     glDrawArrays(GL_QUADS, 0, 4);
-    // Disable vertex arrays and blending
+
+    // Disable blending and vertex arrays
+    glDisable(GL_BLEND);
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_COLOR_ARRAY);
-    glDisable(GL_BLEND);
 }
 
 void display()
@@ -136,36 +119,42 @@ void display()
     // Set particle color
     glColor3f(64, 64, 64);
 
-    // Draw the card
-    glPushMatrix();
-    glTranslatef(-2.7, 0, 0);
-    // Define vertex data for the quad
-    float width = 1.05;
-    float height = 3;
-    float size = 6 * sizeof(GLfloat);
-    // Define gradient colors
-    GLfloat gradient_colors[] = {0, 0, 0, 1.0, 0.2, 0.2, 0.2, 0.7};
-    GLfloat vertices[] = {
-        0.0f, 0.0f, gradient_colors[0], gradient_colors[1], gradient_colors[2], gradient_colors[3],
-        width, 0.0f, gradient_colors[0], gradient_colors[1], gradient_colors[2], gradient_colors[3],
-        width, height, gradient_colors[4], gradient_colors[5], gradient_colors[6], gradient_colors[7],
-        0.0f, height, gradient_colors[4], gradient_colors[5], gradient_colors[6], gradient_colors[7]};
-    render_card(vertices, width, height, size);
-    glPopMatrix();
-
+    if (TEXT)
+    {
+        // Draw the card
+        glPushMatrix();
+        glTranslatef(-2.7, 0, 0);
+        // Define vertex data for the quad
+        float width = 1.05;
+        float height = 3;
+        float size = 6 * sizeof(GLfloat);
+        // Define gradient colors
+        GLfloat gradient_colors[] = {0, 0, 0, 1.0, 0.2, 0.2, 0.2, 0.7};
+        GLfloat vertices[] = {
+            0.0f, 0.0f, gradient_colors[0], gradient_colors[1], gradient_colors[2], gradient_colors[3],
+            width, 0.0f, gradient_colors[0], gradient_colors[1], gradient_colors[2], gradient_colors[3],
+            width, height, gradient_colors[4], gradient_colors[5], gradient_colors[6], gradient_colors[7],
+            0.0f, height, gradient_colors[4], gradient_colors[5], gradient_colors[6], gradient_colors[7]};
+        render_card(vertices, width, height, size);
+        glPopMatrix();
+    }
     // Draw particles
     char particle_data[300];
     float angle, y_pos;
     for (size_t i = 0; i < NUM_PARTICLES; i++)
     {
-        angle = particles[i].angle;
-        y_pos = (float)i / 8 + 0.1;
-        glPushMatrix();
-        glTranslatef(-2.7, 0, 0);
-        sprintf(particle_data, "p: %.2fº, x(%.2f): %.2f, y(%.2f): %.2f\n",
-                angle, times[index], particles[i].x[index], times[index], particles[i].y[index]);
-        display_text(particle_data, 0.05, y_pos);
-        glPopMatrix();
+
+        if (TEXT)
+        {
+            angle = particles[i].angle;
+            y_pos = (float)i / 8 + 0.1;
+            glPushMatrix();
+            glTranslatef(-2.7, 0, 0);
+            snprintf(particle_data, sizeof(particle_data), "p: %.2fº, x(%.2f): %.2f, y(%.2f): %.2f\n",
+                     angle, times[index], particles[i].x[index], times[index], particles[i].y[index]);
+            display_text(particle_data, 0.05, y_pos);
+            glPopMatrix();
+        }
         glPushMatrix();
         glTranslatef(particles[i].x[index], particles[i].y[index], 0);
         glutSolidSphere(0.1, 16, 16);
@@ -196,6 +185,23 @@ double *compute_range(double start, double end, double step)
 
 int main(int argc, char **argv)
 {
+    // Iterate through the command-line arguments
+    for (size_t i = 1; i < argc; i++)
+    {
+        // Compare each argument with the target string
+        if (strcmp(argv[i], "text") == 0)
+        {
+            TEXT = true;
+            break; // Stop iterating if a match is found
+        }
+
+        // Compare each argument with the target string
+        if (strcmp(argv[i], "print") == 0)
+        {
+            PRINT = true;
+            break; // Stop iterating if a match is found
+        }
+    }
     // Initialize OpenGL
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);

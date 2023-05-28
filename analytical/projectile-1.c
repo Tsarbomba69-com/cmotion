@@ -33,28 +33,7 @@ typedef struct Particle
     float angle;
 } Particle;
 
-// Card
-typedef struct Card
-{
-    float width;
-    float height;
-    float size;
-    GLfloat vertices[];
-} Card;
-
 Particle particles[NUM_PARTICLES] = {};
-// Define gradient colors
-// GLfloat gradient_colors[] = {0, 0, 0, 1.0, 0.2, 0.2, 0.2, 0.7};
-// GLfloat vertices[] = {
-//     0.0f, 0.0f, gradient_colors[0], gradient_colors[1], gradient_colors[2], gradient_colors[3],
-//     width, 0.0f, gradient_colors[0], gradient_colors[1], gradient_colors[2], gradient_colors[3],
-//     width, height, gradient_colors[4], gradient_colors[5], gradient_colors[6], gradient_colors[7],
-//     0.0f, height, gradient_colors[4], gradient_colors[5], gradient_colors[6], gradient_colors[7]};
-Card static card = {
-    .height = 3,
-    .width = 1.05,
-    .size = 6 * sizeof(GLfloat),
-    .vertices = {0.0f, 0.0f, 0, 0, 0, 1, 1.05, 0.0f, 0, 0, 0, 1, 1.05, 3, 0.2, 0.2, 0.2, 0.7, 0.0f, 3, 0.2, 0.2, 0.2, 0.7}};
 
 void update(int value)
 {
@@ -110,7 +89,7 @@ void display_text(char *text, float x, float y)
     }
 }
 
-void render_card(Card *card)
+void render_card(GLfloat vertices[], float width, float height, float size)
 {
     // Create and bind a VBO
     GLuint vbo;
@@ -118,15 +97,15 @@ void render_card(Card *card)
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
     // Transfer the vertex data to the VBO
-    glBufferData(GL_ARRAY_BUFFER, card->size * sizeof(GLfloat), card->vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, size * sizeof(GLfloat), vertices, GL_STATIC_DRAW);
 
     // Enable vertex attributes
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_COLOR_ARRAY);
 
     // Specify the vertex attribute pointers
-    glVertexPointer(2, GL_FLOAT, card->size, 0);
-    glColorPointer(4, GL_FLOAT, card->size, (GLvoid *)(2 * sizeof(GLfloat)));
+    glVertexPointer(2, GL_FLOAT, size, 0);
+    glColorPointer(4, GL_FLOAT, size, (GLvoid *)(2 * sizeof(GLfloat)));
 
     // Draw the quad using the VBO
     glDrawArrays(GL_QUADS, 0, 4);
@@ -154,16 +133,28 @@ void display()
 
     if (TEXT)
     {
-        // clock_t start = clock();
+        clock_t start = clock();
         // Draw the card
         glPushMatrix();
         glTranslatef(-2.7, 0, 0);
         // Define vertex data for the quad
-        render_card(&card);
+        float width = 1.05;
+        float height = 3;
+        float size = 6 * sizeof(GLfloat);
+        // Define gradient colors
+        GLfloat gradient_colors[] = {0, 0, 0, 1.0, 0.2, 0.2, 0.2, 0.7};
+        GLfloat vertices[] = {
+            0.0f, 0.0f, gradient_colors[0], gradient_colors[1], gradient_colors[2], gradient_colors[3],
+            width, 0.0f, gradient_colors[0], gradient_colors[1], gradient_colors[2], gradient_colors[3],
+            width, height, gradient_colors[4], gradient_colors[5], gradient_colors[6], gradient_colors[7],
+            0.0f, height, gradient_colors[4], gradient_colors[5], gradient_colors[6], gradient_colors[7]};
+        render_card(vertices, width, height, size);
         glPopMatrix();
-        // clock_t end = clock();
-        // double elapsed_time = (double)(end - start) / CLOCKS_PER_SEC;
-        // printf("Elapsed time: %f seconds\n", elapsed_time);
+
+        clock_t end = clock();
+        double elapsed_time = (double)(end - start) / CLOCKS_PER_SEC;
+
+        printf("Elapsed time: %f seconds\n", elapsed_time);
     }
     // Draw particles
     char particle_data[44];

@@ -40,6 +40,8 @@
 			"args": [
 				"-fdiagnostics-color=always",
 				"-g3",
+				"-O2",
+				"-O3",
 				"-Wall",
 				"${file}",
 				"-o",
